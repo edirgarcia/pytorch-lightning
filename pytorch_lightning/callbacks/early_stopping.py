@@ -109,6 +109,13 @@ class EarlyStopping(Callback):
         self.stopped_epoch = 0
         self.best = torch_inf if self.monitor_op == torch.lt else -torch_inf
 
+        if trainer.on_gpu :
+            self.best = self.best.cuda()
+
+        if trainer.on_tpu and trainer.XLA_AVAILABLE:
+            tpu_device = trainer._device
+            self.best = self.best.to(tpu_device)
+
     def on_validation_end(self, trainer, pl_module):
         return self._run_early_stopping_check(trainer, pl_module)
 
